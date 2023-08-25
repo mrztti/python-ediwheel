@@ -19,7 +19,6 @@ class EdiConnectorConfig:
     username: str
     password: str
     id: str
-    line_id: str
     timeout_s: int = 10
 
     def encode_auth(self):
@@ -46,13 +45,13 @@ class EdiConnector:
             'Authorization': "Basic " + self.config.encode_auth(),
         }
         # prepare the xml payload, render using jinja2
-        # templates/enquiry.xml
-        with open(TEMPLATES_PATH + "/enquiry.xml", 'r') as f:
+        # templates/inquiry.xml
+        with open(TEMPLATES_PATH + "/inquiry.xml", 'r') as f:
             template = Environment().from_string(f.read())
 
         print(headers)
         # send the request
-        payload = template.render(id=self.config.id, ean=ean, line_id=self.config.line_id, manufacturer=manufacturer)
+        payload = template.render(id=self.config.id, ean=ean, manufacturer=manufacturer)
         try:
             response = requests.post(
                 url=self.config.host,

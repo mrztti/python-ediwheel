@@ -7,7 +7,7 @@
     <AgencyCode>91</AgencyCode>
   </BuyerParty>
   <OrderLine>
-    <LineID>1</LineID>
+    <LineID>000001</LineID>
     <OrderedArticle>
       <ArticleIdentification>
         <EANUCCArticleID>{{ ean }}</EANUCCArticleID>

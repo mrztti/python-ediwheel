@@ -1,15 +1,15 @@
 from setuptools import setup
 
 setup(
-    name='python-ediwheel',
+    name='ediwheel',
     version='0.1.0',
     description='AdHoc Ediwheel XML API port to Python',
-    url='',
+    url='https://github.com/mrztti/python-ediwheel',
     author='M.Ranzetti',
     author_email='maloranzetti@gmail.com',
-    license='BSD 2-clause',
-    packages=['pyediwheel'],
-    package_dir={'pyediwheel': 'pyediwheel'},
+    license_files='LICENSE',
+    packages=['ediwheel'],
+    package_dir={'ediwheel': 'ediwheel'},
     install_requires=['jinja2',
                       'requests'],
 
