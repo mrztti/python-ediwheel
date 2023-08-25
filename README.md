@@ -18,6 +18,18 @@ To use this package, you will need to obtain API authentication credentials from
 
 A config is instantiated as such:
 ```python
-from ediwheel import Config
+from ediwheel import EdiConnectorConfig, EdiConnector
+
+config = EdiConnectorConfig(
+    host="https:/some_api_url.com",
+    username="username",
+    password="password",
+    id="customer_id",
+    timeout_s=10,
+)
+
+connector = EdiConnector(config)
+connector.enquiry("EAN_CODE", "MANUFACTURER_CODE")
+```
 
 
