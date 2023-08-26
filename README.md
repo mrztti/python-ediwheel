@@ -30,6 +30,16 @@ config = EdiConnectorConfig(
 
 connector = EdiConnector(config)
 connector.enquiry("EAN_CODE", "MANUFACTURER_CODE")
+
+```
+
+There is also a method available for batch queries, which performs better for large updates of stock.
+Usually, the request will time out for large batches, therefore one must split large lists into smaller batches.
+```python
+results = connector.batch_enquiry(list_of_EANs, list_of_manufacturer_codes)
+
+for ean, stock, delivery_date in results:
+    print(ean, stock, delivery_date)
 ```
 
 
