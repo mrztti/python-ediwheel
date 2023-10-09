@@ -1,7 +1,7 @@
 import base64
 import os
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from jinja2 import Environment
 import requests
@@ -74,9 +74,11 @@ class EdiConnector:
             raise EdiConnectorTimeoutError()
 
         # check the response
-
+        print(response.status_code)
+        print(response.content.decode('utf-8'))
         if response.status_code != 200:
             raise EdiConnectorError("Error in the response")
+
 
         # parse the response
         pres = md.parseString(response.content.decode('utf-8'))
@@ -87,11 +89,13 @@ class EdiConnector:
         parsed_date = datetime.strptime(delivery_date, "%Y-%m-%d")
         return qt, parsed_date
 
-    def batch_inquiry(self, ean_list, supplier_id_list):
+    def batch_inquiry(self, ean_list, supplier_id_list, debug=False, debug_logger=None):
         """
         Perform a batch enquiry for a list of ean and supplier_id
         :param ean_list: list of EAN
         :param supplier_id_list: list of supplier_id
+        :param debug: if True, print debug info
+        :param debug_logger: if debug is True, this is the logger to use. Must have a print method
         :return: list of quantities and list of delivery dates
         """
 
@@ -121,8 +125,14 @@ class EdiConnector:
             )
         except requests.exceptions.Timeout:
             raise EdiConnectorTimeoutError()
+        except Exception as e:
+            raise e
 
        # parse the response
+        if debug:
+            debug_logger.print(response.status_code)
+            debug_logger.print(response.content.decode('utf-8'))
+
         pres = md.parseString(response.content.decode('utf-8'))
         res_list = []
         qts = pres.getElementsByTagName("QuantityValue")[1::2]
