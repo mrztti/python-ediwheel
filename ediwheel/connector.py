@@ -23,6 +23,7 @@ class EdiConnectorConfig:
     password: str
     id: str
     timeout_s: int = 10
+    max_value: int = 100
 
     def encode_auth(self):
         """
@@ -66,7 +67,11 @@ class EdiConnector:
         # set dates to two weeks from now
         date_string = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
 
-        payload = template.render(id=self.config.id, ean=ean, manufacturer=manufacturer, date_string=date_string)
+        payload = template.render(id=self.config.id,
+                                  ean=ean,
+                                  manufacturer=manufacturer,
+                                  date_string=date_string,
+                                  max_value=self.config.max_value)
         try:
             response = requests.post(
                 url=self.config.host,
@@ -126,7 +131,10 @@ class EdiConnector:
 
         # set dates to two weeks from now
         date_string = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
-        payload = template.render(id=self.config.id, lines=lines, date_string=date_string)
+        payload = template.render(id=self.config.id,
+                                  lines=lines,
+                                  date_string=date_string,
+                                  max_value=self.config.max_value)
         try:
             response = requests.post(
                 url=self.config.host,
