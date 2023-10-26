@@ -62,7 +62,11 @@ class EdiConnector:
         with open(TEMPLATES_PATH + "/inquiry.xml", 'r') as f:
             template = Environment().from_string(f.read())
         # send the request
-        payload = template.render(id=self.config.id, ean=ean, manufacturer=manufacturer)
+
+        # set dates to two weeks from now
+        date_string = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+
+        payload = template.render(id=self.config.id, ean=ean, manufacturer=manufacturer, date_string=date_string)
         try:
             response = requests.post(
                 url=self.config.host,
@@ -81,13 +85,17 @@ class EdiConnector:
 
 
         # parse the response
-        pres = md.parseString(response.content.decode('utf-8'))
-        qt = pres.getElementsByTagName("QuantityValue")[1].firstChild.nodeValue
-        delivery_date = pres.getElementsByTagName("DeliveryDate")[0].firstChild.nodeValue
+        try:
+            pres = md.parseString(response.content.decode('utf-8'))
+            qt = pres.getElementsByTagName("QuantityValue")[1].firstChild.nodeValue
+            delivery_date = pres.getElementsByTagName("DeliveryDate")[0].firstChild.nodeValue
 
-        # parse the date to a datetime object
-        parsed_date = datetime.strptime(delivery_date, "%Y-%m-%d")
-        return qt, parsed_date
+            # parse the date to a datetime object
+            parsed_date = datetime.strptime(delivery_date, "%Y-%m-%d")
+            return qt, parsed_date
+        except Exception as e:
+            print("Error parsing XML")
+            return 0, None
 
     def batch_inquiry(self, ean_list, supplier_id_list, debug=False, debug_logger=None):
         """
@@ -115,7 +123,10 @@ class EdiConnector:
         with open(TEMPLATES_PATH + "/inquiry_batch.xml", 'r') as f:
             template = Environment().from_string(f.read())
         # send the request
-        payload = template.render(id=self.config.id, lines=lines)
+
+        # set dates to two weeks from now
+        date_string = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+        payload = template.render(id=self.config.id, lines=lines, date_string=date_string)
         try:
             response = requests.post(
                 url=self.config.host,
@@ -133,19 +144,24 @@ class EdiConnector:
             debug_logger.print(response.status_code)
             debug_logger.print(response.content.decode('utf-8'))
 
-        pres = md.parseString(response.content.decode('utf-8'))
-        res_list = []
-        qts = pres.getElementsByTagName("QuantityValue")[1::2]
-        for ean, qt, ds in zip(ean_list, qts, pres.getElementsByTagName("DeliveryDate")):
-            try:
-                q = int(qt.firstChild.nodeValue)
-                d = datetime.strptime(ds.firstChild.nodeValue, "%Y-%m-%d")
-                if d > datetime.now() + timedelta(days=365):
-                    d = None
-                res_list.append((ean, q, d))
-            except:
-                continue
-
-        return res_list
-
+        try:
+            pres = md.parseString(response.content.decode('utf-8'))
+            res_list = []
+            qts = pres.getElementsByTagName("QuantityValue")[1::2]
+            for ean, qt, ds in zip(ean_list, qts, pres.getElementsByTagName("DeliveryDate")):
+                try:
+                    q = int(qt.firstChild.nodeValue)
+                    d = datetime.strptime(ds.firstChild.nodeValue, "%Y-%m-%d")
+                    if d > datetime.now() + timedelta(days=365):
+                        d = None
+                    res_list.append((ean, q, d))
+                except:
+                    res_list.append((ean, 0, None))
+                    continue
+            return res_list
+        except Exception as e:
+            if debug_logger is not None:
+                debug_logger.print("Error parsing XML")
+                debug_logger.print(e)
+            return [(ean, 0, None) for ean in ean_list]
 
