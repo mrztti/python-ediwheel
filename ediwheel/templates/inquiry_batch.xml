@@ -18,7 +18,7 @@
       </ArticleIdentification>
       <RequestedDeliveryDate>{{ date_string }}</RequestedDeliveryDate>
       <RequestedQuantity>
-        <QuantityValue>100</QuantityValue>
+        <QuantityValue>20</QuantityValue>
       </RequestedQuantity>
     </OrderedArticle>
   </OrderLine>
